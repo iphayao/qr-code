@@ -25,6 +25,7 @@ namespace qr_code
             int modules_pattern = ((modules_size - 8 * 2 - 5 * group) * 2) + ((int)(Math.Pow((group + 1), 2) + group * 2) * 25) + ((int)(Math.Pow(8, 2) * 3)) - ((version > 1) ? 0 : 25);
 
             int ms = modules_size;
+            int[,] patterns = new int[modules_size, modules_size];
             int[,] modules = new int[modules_size, modules_size];
 
             // Position pattern
@@ -34,27 +35,27 @@ namespace qr_code
                 {
                     if (i == 0 || i == 6)
                     {
-                        modules[i, j] = (j < 7 || j >= ms - 7) ? 1 : 0;
+                        patterns[i, j] = (j < 7 || j >= ms - 7) ? 1 : 0;
                     }
                     else if (i == ms - 7 || i == ms - 1)
                     {
-                        modules[i, j] = (j < 7) ? 1 : 0;
+                        patterns[i, j] = (j < 7) ? 1 : 0;
                     }
                     else if (i == 1 || i == 5)
                     {
-                        modules[i, j] = ((j == 0 || j == 6) || (j == ms - 7 || j == ms - 1)) ? 1 : 0;
+                        patterns[i, j] = ((j == 0 || j == 6) || (j == ms - 7 || j == ms - 1)) ? 1 : 0;
                     }
                     else if (i == ms - 6 || i == ms - 2)
                     {
-                        modules[i, j] = (j == 0 || j == 6) ? 1 : 0;
+                        patterns[i, j] = (j == 0 || j == 6) ? 1 : 0;
                     }
                     else if (i >= 2 && i <= 4)
                     {
-                        modules[i, j] = ((j == 0 || j == 6 || (j >= 2 && j <= 4)) || (j == ms - 7 || j == ms - 1 || (j >= ms - 5 && j <= ms - 3))) ? 1 : 0;
+                        patterns[i, j] = ((j == 0 || j == 6 || (j >= 2 && j <= 4)) || (j == ms - 7 || j == ms - 1 || (j >= ms - 5 && j <= ms - 3))) ? 1 : 0;
                     }
                     else if (i >= ms - 5 && i <= ms - 3)
                     {
-                        modules[i, j] = (j == 0 || j == 6 || (j >= 2 && j <= 4)) ? 1 : 0;
+                        patterns[i, j] = (j == 0 || j == 6 || (j >= 2 && j <= 4)) ? 1 : 0;
                     }
                 }
             }
@@ -65,16 +66,16 @@ namespace qr_code
             {
                 for (int j = 6; j < modules_size; j += aligment)
                 {
-                    if (modules[i, j] != 1)
+                    if (patterns[i, j] != 1)
                     {
                         for (int ii = -2; ii <= 2; ii++)
                         {
                             for (int jj = -2; jj <= 2; jj++)
                             {
-                                modules[i - ii, j - jj] = ((Math.Abs(ii) == 2) || (Math.Abs(jj) == 2)) ? 1 : 0;
+                                patterns[i - ii, j - jj] = ((Math.Abs(ii) == 2) || (Math.Abs(jj) == 2)) ? 1 : 0;
                             }
                         }
-                        modules[i, j] = 1;
+                        patterns[i, j] = 1;
                     }
                 }
             }
@@ -86,10 +87,21 @@ namespace qr_code
                 {
                     for (int j = 8; j < modules_size - 8; j += 2)
                     {
-                        modules[i, j] = 1;
+                        patterns[i, j] = 1;
                     }
                 }
-                modules[i, 6] = 1;
+                patterns[i, 6] = 1;
+            }
+
+            // End created pattern
+
+            // Copy patterns to modules
+            for (int i = 0; i < modules_size; i++)
+            {
+                for(int j = 0; j < modules_size; j++)
+                {
+                    modules[i, j] = patterns[i, j];
+                }
             }
 
             int x, y;
@@ -111,7 +123,7 @@ namespace qr_code
                 if ((x + 1) % scale == 0) m++;
             }
 
-            img.Save("qrcode.bmp", ImageFormat.Bmp);
+            img.Save("qrcode.jpg", ImageFormat.Jpeg);
 
         }
     }
